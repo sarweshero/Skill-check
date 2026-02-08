@@ -17,6 +17,8 @@ import {
     Moon,
     Bell,
     ChevronDown,
+    Eye,
+    EyeOff,
 } from 'lucide-react';
 import { useAuthStore, useIsAdmin } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -54,7 +56,7 @@ const studentNavItems: NavItem[] = [
 ];
 
 interface MainLayoutProps {
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
@@ -139,7 +141,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <div className="p-4 border-t">
                         <div className="flex items-center gap-3 px-2 py-2">
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src="" />
+                                <AvatarImage src={user?.profilePictureUrl} className="object-cover" />
                                 <AvatarFallback className="text-xs">
                                     {user?.name ? getInitials(user.name) : 'U'}
                                 </AvatarFallback>
@@ -202,7 +204,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <div className="p-4 border-t">
                         <div className="flex items-center gap-3 px-2 py-2">
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src="" />
+                                <AvatarImage src={user?.profilePictureUrl} className="object-cover" />
                                 <AvatarFallback className="text-xs">
                                     {user?.name ? getInitials(user.name) : 'U'}
                                 </AvatarFallback>
@@ -235,6 +237,29 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                     <div className="flex items-center gap-2">
                         {/* Theme Toggle */}
+                        {location.pathname === '/admin/students' && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    const searchParams = new URLSearchParams(window.location.search);
+                                    if (searchParams.get('showInactive') === 'true') {
+                                        searchParams.delete('showInactive');
+                                    } else {
+                                        searchParams.set('showInactive', 'true');
+                                    }
+                                    navigate(`${location.pathname}?${searchParams.toString()}`);
+                                }}
+                                title={new URLSearchParams(window.location.search).get('showInactive') === 'true' ? "Show Active Students" : "Show Inactive Students"}
+                            >
+                                {new URLSearchParams(window.location.search).get('showInactive') === 'true' ? (
+                                    <EyeOff className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )}
+                            </Button>
+                        )}
+
                         <Button variant="ghost" size="icon" onClick={toggleTheme}>
                             {theme === 'dark' ? (
                                 <Sun className="w-5 h-5" />
@@ -265,7 +290,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="flex items-center gap-2 px-2">
                                     <Avatar className="h-8 w-8">
-                                        <AvatarImage src="" />
+                                        <AvatarImage src={user?.profilePictureUrl} className="object-cover" />
                                         <AvatarFallback className="text-xs">
                                             {user?.name ? getInitials(user.name) : 'U'}
                                         </AvatarFallback>

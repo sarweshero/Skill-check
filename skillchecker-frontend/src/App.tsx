@@ -70,6 +70,7 @@ const App: React.FC = () => {
                     <Route path="/admin/skills" element={<AdminSkills />} />
                     <Route path="/admin/evaluate" element={<AdminEvaluate />} />
                     <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                    <Route path="/admin/students/:id" element={<StudentProfile />} />
                 </Route>
 
                 {/* Catch-all redirect */}

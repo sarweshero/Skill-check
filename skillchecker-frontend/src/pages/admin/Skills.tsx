@@ -113,10 +113,10 @@ export const Skills: React.FC = () => {
                     variant: 'success',
                 });
             } else {
-                await adminApi.createSkill(formData);
+                const response = await adminApi.createSkill(formData);
                 setSkills((prev) => [
                     ...prev,
-                    { id: Date.now(), ...formData },
+                    response.data || { id: Date.now(), ...formData },
                 ]);
                 toast({
                     title: 'Skill Created',

@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { data } from 'react-router-dom';
 
 // Create axios instance
 const api = axios.create({
@@ -49,10 +50,16 @@ export const authApi = {
 // Admin API
 export const adminApi = {
     // Student management
-    createStudent: (data: { name: string; email: string; password: string; department?: string }) =>
+    createStudent: (data: { name: string; email: string; password: string; dept?: string; active?: boolean }) =>
         api.post('/admin/students', data),
 
-    updateStudent: (id: number, data: { name?: string; email?: string; department?: string }) =>
+    getAllStudents: (active?: boolean) =>
+        api.get('/admin/students', { params: { active } }),
+
+    getStudentProfile: (id: number | string) =>
+        api.get(`/admin/students/${id}`),
+
+    updateStudent: (id: number, data: { name?: string; email?: string; dept?: string; active?: boolean }) =>
         api.put(`/admin/students/${id}`, data),
 
     deleteStudent: (id: number) =>
@@ -79,10 +86,22 @@ export const adminApi = {
 
 // Student API
 export const studentApi = {
-    getProfile: () =>
-        api.get('/student/me'),
+    getProfile: (id?: string | number) =>
+        api.get(id ? `/student/${id}` : '/student/me'),
 
-    updateProfile: (data: { name?: string; department?: string; bio?: string }) =>
+    updateProfile: (data: {
+        name?: string;
+        dept?: string;
+        bio?: string;
+        githubUrl?: string | null;
+        linkedinUrl?: string | null;
+        portfolioUrl?: string | null;
+        resumeUrl?: string | null;
+        cgpa?: number | null;
+        graduationYear?: number | null;
+        yearOfStudy?: number | null;
+        profilePictureUrl?: string | null;
+    }) =>
         api.put('/student/profile', data),
 
     submitEvidence: (data: FormData) =>

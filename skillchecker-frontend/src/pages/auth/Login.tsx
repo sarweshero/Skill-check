@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthStore, decodeToken } from '@/store/authStore';
 import { authApi } from '@/services/api';
-import { useToast, toast } from '@/hooks/useToast';
+import { toast } from '@/hooks/useToast';
 
 interface FormErrors {
     email?: string;
@@ -97,7 +97,6 @@ export const Login: React.FC = () => {
                 description: `Logged in as ${user.name}`,
                 variant: 'success',
             });
-
             // Redirect based on role
             const redirectPath = user.role === 'ADMIN' ? '/admin' : '/student';
             navigate(from === '/' ? redirectPath : from, { replace: true });

@@ -76,6 +76,8 @@ export const Register: React.FC = () => {
         return Object.keys(newErrors).length === 0;
     };
 
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -84,58 +86,17 @@ export const Register: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const response = await authApi.register({ name, email, password, role });
-            console.log('Register response:', response);
-            console.log('Register response data:', response.data);
-
-            const { token, role: responseRole } = response.data;
-            let { user } = response.data;
-
-            if (!token) {
-                console.warn('Missing token in response');
-                throw new Error('Invalid response from server: Missing token');
-            }
-
-            // If user object is missing, try to construct it
-            if (!user) {
-                console.warn('User object missing in response, attempting to decode token...');
-                const decoded = decodeToken(token);
-
-                if (decoded) {
-                    user = {
-                        id: decoded.id || 0,
-                        email: decoded.email || email,
-                        name: decoded.name || name,
-                        role: responseRole || role || 'STUDENT',
-                    };
-                } else {
-                    user = {
-                        id: 0,
-                        email: email,
-                        name: name,
-                        role: responseRole || role || 'STUDENT',
-                    };
-                }
-            }
-
-            setAuth(token, user);
+            await authApi.register({ name, email, password, role });
 
             toast({
                 title: 'Account created!',
-                description: 'Welcome to SkillChecker',
+                description: 'Registration successful. Please log in to continue.',
                 variant: 'success',
             });
 
-            const redirectPath = user?.role === 'ADMIN' ? '/admin' : '/student';
-            navigate(redirectPath, { replace: true });
+            navigate('/login', { replace: true });
         } catch (error: any) {
-            console.error('Register Error:', error);
-            if (error.response) {
-                console.error('Error Response:', error.response);
-                console.error('Error Status:', error.response.status);
-            }
-
-            const message = error.response?.data?.message || 'Registration failed. Please try again.';
+            const message = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
             toast({
                 title: 'Registration Failed',
                 description: message,

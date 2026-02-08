@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Users,
@@ -7,8 +8,9 @@ import {
     Edit,
     Trash2,
     Loader2,
+    Eye,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +28,8 @@ import { getInitials } from '@/utils/helpers';
 import { Student } from '@/types';
 
 export const Students: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -37,24 +41,30 @@ export const Students: React.FC = () => {
         name: '',
         email: '',
         password: '',
-        department: '',
+        dept: '',
+        active: true,
     });
 
     useEffect(() => {
         fetchStudents();
-    }, []);
+    }, [searchParams]);
 
     const fetchStudents = async () => {
         try {
             // In real app, fetch from API
-            setStudents([
-                { id: 1, name: 'Alice Johnson', email: 'alice@example.com', department: 'Engineering', competencyScore: 92 },
-                { id: 2, name: 'Bob Smith', email: 'bob@example.com', department: 'Design', competencyScore: 88 },
-                { id: 3, name: 'Carol White', email: 'carol@example.com', department: 'Engineering', competencyScore: 85 },
-                { id: 4, name: 'David Brown', email: 'david@example.com', department: 'Marketing', competencyScore: 82 },
-                { id: 5, name: 'Eva Garcia', email: 'eva@example.com', department: 'Engineering', competencyScore: 80 },
-                { id: 6, name: 'Frank Lee', email: 'frank@example.com', department: 'Sales', competencyScore: 78 },
-            ]);
+            // setStudents([
+            //     { id: 1, name: 'Alice Johnson', email: 'alice@example.com', dept: 'Engineering', competencyScore: 92 },
+            //     { id: 2, name: 'Bob Smith', email: 'bob@example.com', dept: 'Design', competencyScore: 88 },
+            //     { id: 3, name: 'Carol White', email: 'carol@example.com', dept: 'Engineering', competencyScore: 85 },
+            //     { id: 4, name: 'David Brown', email: 'david@example.com', dept: 'Marketing', competencyScore: 82 },
+            //     { id: 5, name: 'Eva Garcia', email: 'eva@example.com', dept: 'Engineering', competencyScore: 80 },
+            //     { id: 6, name: 'Frank Lee', email: 'frank@example.com', dept: 'Sales', competencyScore: 78 },
+            // ]);
+            const showInactive = searchParams.get('showInactive') === 'true';
+            // pass active=false if showInactive is true, otherwise pass active=true (or let backend default)
+            // The requirement says: send a param active='false' to view inactive users.
+            const response = await adminApi.getAllStudents(!showInactive);
+            setStudents(response.data);
         } catch (error) {
             toast({
                 title: 'Error',
@@ -70,7 +80,7 @@ export const Students: React.FC = () => {
         (student) =>
             student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            student.department?.toLowerCase().includes(searchQuery.toLowerCase())
+            student.dept?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleOpenModal = (student?: Student) => {
@@ -81,12 +91,13 @@ export const Students: React.FC = () => {
                 name: student.name,
                 email: student.email,
                 password: '',
-                department: student.department || '',
+                dept: student.dept || '',
+                active: true,
             });
         } else {
             setIsEditing(false);
             setSelectedStudent(null);
-            setFormData({ name: '', email: '', password: '', department: '' });
+            setFormData({ name: '', email: '', password: '', dept: '', active: true });
         }
         setIsModalOpen(true);
     };
@@ -94,7 +105,7 @@ export const Students: React.FC = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedStudent(null);
-        setFormData({ name: '', email: '', password: '', department: '' });
+        setFormData({ name: '', email: '', password: '', dept: '', active: true });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -105,12 +116,12 @@ export const Students: React.FC = () => {
             if (isEditing && selectedStudent) {
                 await adminApi.updateStudent(selectedStudent.id, {
                     name: formData.name,
-                    department: formData.department,
+                    dept: formData.dept,
                 });
                 setStudents((prev) =>
                     prev.map((s) =>
                         s.id === selectedStudent.id
-                            ? { ...s, name: formData.name, department: formData.department }
+                            ? { ...s, name: formData.name, dept: formData.dept, active: formData.active }
                             : s
                     )
                 );
@@ -128,7 +139,8 @@ export const Students: React.FC = () => {
                         id: Date.now(),
                         name: formData.name,
                         email: formData.email,
-                        department: formData.department,
+                        dept: formData.dept,
+                        active: formData.active,
                         competencyScore: 0,
                     },
                 ]);
@@ -176,7 +188,11 @@ export const Students: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Student Management</h1>
-                    <p className="text-muted-foreground">Manage and track student information</p>
+                    <p className="text-muted-foreground">
+                        {searchParams.get('showInactive') === 'true'
+                            ? 'Viewing Inactive Students'
+                            : 'Manage and track student information'}
+                    </p>
                 </div>
                 <Button variant="gradient" onClick={() => handleOpenModal()}>
                     <Plus className="w-4 h-4 mr-2" />
@@ -207,6 +223,7 @@ export const Students: React.FC = () => {
                         <Card className="card-hover">
                             <CardContent className="p-6">
                                 <div className="flex items-start gap-4">
+
                                     <Avatar className="h-12 w-12">
                                         <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
                                     </Avatar>
@@ -216,22 +233,30 @@ export const Students: React.FC = () => {
                                             {student.email}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                            {student.department || 'No department'}
+                                            {student.dept || 'No department'}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="mt-4 flex items-center justify-between">
                                     <span
                                         className={`text-sm font-medium ${(student.competencyScore || 0) >= 80
-                                                ? 'text-green-500'
-                                                : (student.competencyScore || 0) >= 60
-                                                    ? 'text-yellow-500'
-                                                    : 'text-red-500'
+                                            ? 'text-green-500'
+                                            : (student.competencyScore || 0) >= 60
+                                                ? 'text-yellow-500'
+                                                : 'text-red-500'
                                             }`}
                                     >
                                         Score: {student.competencyScore || 0}%
                                     </span>
                                     <div className="flex gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => navigate(`/admin/students/${student.id}`)}
+                                            title="View Profile"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -307,12 +332,12 @@ export const Students: React.FC = () => {
                                 </div>
                             )}
                             <div className="space-y-2">
-                                <Label htmlFor="department">Department</Label>
+                                <Label htmlFor="dept">Department</Label>
                                 <Input
-                                    id="department"
-                                    value={formData.department}
+                                    id="dept"
+                                    value={formData.dept}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, department: e.target.value })
+                                        setFormData({ ...formData, dept: e.target.value })
                                     }
                                     placeholder="Enter department"
                                 />

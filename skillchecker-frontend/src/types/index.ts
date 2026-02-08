@@ -4,13 +4,16 @@ export interface User {
     email: string;
     name: string;
     role: 'ADMIN' | 'STUDENT';
+    dept?: string;
+    bio?: string;
+    profilePictureUrl?: string;
 }
 
 export interface Student {
     id: number;
     name: string;
     email: string;
-    department?: string;
+    dept?: string;
     enrollmentDate?: string;
     competencyScore?: number;
 }
@@ -19,7 +22,7 @@ export interface StudentProfile {
     id: number;
     name: string;
     email: string;
-    department?: string;
+    dept?: string;
     bio?: string;
     avatarUrl?: string;
 }
